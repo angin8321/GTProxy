@@ -28,6 +28,7 @@ enum class PacketId : uint32_t {
     OnSendToServer,
     OnSpawn,
     OnRemove,
+    OnFtueButtonDataSet,
     Unknown = std::numeric_limits<uint32_t>::max(),
 };
 
@@ -64,6 +65,7 @@ inline const std::unordered_map<std::string_view, PacketId> VARIANT_FUNCTION_MAP
     { "OnRemove", PacketId::OnRemove },
     { "OnNameChanged", PacketId::OnNameChanged },
     { "OnChangeSkin", PacketId::OnChangeSkin },
+    { "OnFtueButtonDataSet", PacketId::OnFtueButtonDataSet },
 };
 
 inline const std::unordered_map<PacketType, PacketId> GAME_PACKET_MAP = {

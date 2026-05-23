@@ -51,7 +51,7 @@ struct OnSendToServer : VariantPacket<PacketId::OnSendToServer> {
         door_id = text_parse.get(key, 0);
         uuid_token = text_parse.get(key, 1);
 
-        login_mode = variant.get<uint32_t>(5);
+        login_mode = static_cast<uint8_t>(variant.get<int32_t>(5));
         username = variant.get<std::string>(6);
         return true;
     }
@@ -67,7 +67,7 @@ struct OnSendToServer : VariantPacket<PacketId::OnSendToServer> {
             token,
             user,
             text_parse.get_raw(),
-            static_cast<uint32_t>(login_mode),
+            static_cast<int32_t>(login_mode),
             username
         };
 

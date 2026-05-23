@@ -127,9 +127,10 @@ struct PacketHelper {
 
         data.push_back(static_cast<std::byte>(0x00));
 
+        const auto pkt_name{ magic_enum::enum_name(packet.id()) };
         spdlog::get("packet")->debug(
             "Sending packet {} on channel {}: {:p}",
-            magic_enum::enum_name(packet.id()),
+            pkt_name.empty() ? fmt::format("PacketId({:#08x})", static_cast<uint32_t>(packet.id())) : std::string{ pkt_name },
             packet.channel(),
             spdlog::to_hex(data)
         );
@@ -147,9 +148,10 @@ struct PacketHelper {
 
         data.push_back(static_cast<std::byte>(0x00));
 
+        const auto pkt_name{ magic_enum::enum_name(Packet::ID) };
         spdlog::get("packet")->debug(
             "Sending {} on channel {}: {:p}",
-            magic_enum::enum_name(Packet::ID),
+            pkt_name.empty() ? fmt::format("PacketId({:#08x})", static_cast<uint32_t>(Packet::ID)) : std::string{ pkt_name },
             Packet::CHANNEL,
             spdlog::to_hex(data)
         );

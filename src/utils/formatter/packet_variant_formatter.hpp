@@ -4,6 +4,34 @@
 
 #include "../../packet/packet_variant.hpp"
 
+namespace packet::detail {
+inline std::string sanitize_string(const std::string& str)
+{
+    std::string result{};
+    result.reserve(str.size());
+
+    for (const unsigned char ch : str) {
+        if (ch >= 0x20 && ch < 0x7F) {
+            result += static_cast<char>(ch);
+        }
+        else if (ch == '\n') {
+            result += "\\n";
+        }
+        else if (ch == '\r') {
+            result += "\\r";
+        }
+        else if (ch == '\t') {
+            result += "\\t";
+        }
+        else {
+            result += fmt::format("\\x{:02x}", ch);
+        }
+    }
+
+    return result;
+}
+}
+
 template<>
 struct fmt::formatter<packet::variant> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -15,7 +43,7 @@ struct fmt::formatter<packet::variant> {
         case packet::VariantType::FLOAT:
             return fmt::format_to(ctx.out(), "[FLOAT]: {}", std::get<float>(var));
         case packet::VariantType::STRING:
-            return fmt::format_to(ctx.out(), "[STRING]: {}", std::get<std::string>(var));
+            return fmt::format_to(ctx.out(), "[STRING]: {}", packet::detail::sanitize_string(std::get<std::string>(var)));
         case packet::VariantType::VEC2: {
             const auto& vec{ std::get<glm::vec2>(var) };
             return fmt::format_to(ctx.out(), "[VEC2]: x: {}, y: {}", vec.x, vec.y);

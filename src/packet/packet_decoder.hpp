@@ -2,6 +2,10 @@
 #include <optional>
 #include <span>
 
+#include <magic_enum/magic_enum.hpp>
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/bin_to_hex.h>
+
 #include "packet_registry.hpp"
 #include "packet_types.hpp"
 #include "payload.hpp"
@@ -42,14 +46,14 @@ public:
             stream.read(message, static_cast<uint16_t>(stream.get_size() - sizeof(NetMessageType) - 1));
 
             TextParse parser{ message };
-            spdlog::info("Packet decoded to message:\n{}", fmt::format("{}", parser));
+            pkt_log->info("Packet decoded to message:\n{}", fmt::format("{}", parser));
 
             TextPayload text_payload{ msg_type, std::move(parser) };
             Payload payload = text_payload;
             
             auto packet = PacketRegistry::instance().create(payload);
             if (!packet) {
-                // spdlog::debug("No packet structure registered for this message");
+                pkt_log->debug("No packet structure registered for this text message");
                 return std::nullopt;
             }
             
@@ -69,18 +73,18 @@ public:
             if (game_pkt.type == PACKET_CALL_FUNCTION) {
                 PacketVariant variant{};
                 if (!variant.deserialize(extra)) {
-                    // spdlog::warn("Failed to deserialize variant data");
+                    pkt_log->warn("Failed to deserialize variant data");
                     return std::nullopt;
                 }
 
-                spdlog::info("Packet decoded to variant:\n{}", fmt::format("{}", variant));
+                pkt_log->info("Packet decoded to variant:\n{}", fmt::format("{}", variant));
 
                 VariantPayload var_payload{ game_pkt, std::move(variant) };
                 Payload payload = var_payload;
                 
                 auto packet = PacketRegistry::instance().create(payload);
                 if (!packet) {
-                    // spdlog::debug("No packet structure registered for variant: {}", var_payload.function_name());
+                    pkt_log->debug("No packet structure registered for variant: {}", var_payload.function_name());
                     return std::nullopt;
                 }
                 
@@ -92,14 +96,16 @@ public:
             
             auto packet = PacketRegistry::instance().create(payload);
             if (!packet) {
-                // spdlog::debug("No packet structure registered for type {}", static_cast<uint16_t>(game_pkt.type));
+                pkt_log->debug("No packet structure registered for game packet type: {} ({})",
+                    magic_enum::enum_name(game_pkt.type),
+                    static_cast<uint16_t>(game_pkt.type));
                 return std::nullopt;
             }
 
             return packet;
         }
         default:
-            // spdlog::warn("Unknown message type: {}", static_cast<uint32_t>(msg_type));
+            pkt_log->warn("Unknown message type: {}", static_cast<uint32_t>(msg_type));
             return std::nullopt;
         }
     }

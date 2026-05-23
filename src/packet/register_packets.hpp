@@ -3,6 +3,7 @@
 #include "register_packet_events.hpp"
 #include "game/server.hpp"
 #include "game/world.hpp"
+#include "game/ftue.hpp"
 #include "message/chat.hpp"
 #include "message/exit.hpp"
 #include "message/input.hpp"
@@ -35,6 +36,7 @@ inline bool register_all_packets()
 
     registry.register_packet<game::OnSpawn>();
     registry.register_packet<game::OnRemove>();
+    registry.register_packet<game::OnFtueButtonDataSet>();
 
     event_registry::register_packet_events();
     return true;

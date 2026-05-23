@@ -227,7 +227,7 @@ public:
                 raw_data += token;
             }
 
-            if (std::next(it) != data_.cend() && !std::next(it)->first.empty()) {
+            if (std::next(it) != data_.cend()) {
                 raw_data += "\n";
             }
         }
