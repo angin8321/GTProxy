@@ -19,7 +19,7 @@ protected:
     ENetWrapper& operator=(const ENetWrapper&) = delete;
 
     virtual void on_connect(ENetPeer* peer) = 0;
-    virtual void on_receive(ENetPeer* peer, std::span<const std::byte> data) = 0;
+    virtual void on_receive(ENetPeer* peer, std::span<const std::byte> data, std::uint8_t channel) = 0;
     virtual void on_disconnect(ENetPeer* peer) = 0;
 
 protected:

@@ -94,3 +94,56 @@ TEST(ByteStreamTest, SpanConstructor)
 
     EXPECT_EQ(result.size(), 5);
 }
+
+#include "packet/packet_types.hpp"
+
+TEST(ByteStreamTest, GameUpdatePacketLayout)
+{
+    EXPECT_EQ(sizeof(packet::GameUpdatePacket), 56);
+
+    packet::GameUpdatePacket packet{};
+    packet.type = packet::PACKET_STATE;
+    packet.pad1 = 1;
+    packet.pad2 = 2;
+    packet.pad3 = 3;
+    packet.net_id = 42;
+    packet.secondary_id = 100;
+    packet.flags.value = static_cast<packet::PacketFlag>(packet::PACKET_FLAG_ON_SOLID | packet::PACKET_FLAG_EXTENDED);
+    packet.float1 = 1.5f;
+    packet.int_data = 500;
+    packet.pos_x = 10.0f;
+    packet.pos_y = 20.0f;
+    packet.speed_x = 0.5f;
+    packet.speed_y = -0.5f;
+    packet.float2 = 2.5f;
+    packet.tile_x = 5;
+    packet.tile_y = 6;
+    packet.data_size = 128;
+
+    ByteStream bs{};
+    bs.write(packet);
+
+    EXPECT_EQ(bs.get_size(), 56);
+
+    packet::GameUpdatePacket decoded{};
+    bs.read(decoded);
+
+    EXPECT_EQ(decoded.type, packet::PACKET_STATE);
+    EXPECT_EQ(decoded.pad1, 1);
+    EXPECT_EQ(decoded.pad2, 2);
+    EXPECT_EQ(decoded.pad3, 3);
+    EXPECT_EQ(decoded.net_id, 42);
+    EXPECT_EQ(decoded.secondary_id, 100);
+    EXPECT_TRUE(decoded.flags.on_solid);
+    EXPECT_TRUE(decoded.flags.extended);
+    EXPECT_EQ(decoded.float1, 1.5f);
+    EXPECT_EQ(decoded.int_data, 500);
+    EXPECT_EQ(decoded.pos_x, 10.0f);
+    EXPECT_EQ(decoded.pos_y, 20.0f);
+    EXPECT_EQ(decoded.speed_x, 0.5f);
+    EXPECT_EQ(decoded.speed_y, -0.5f);
+    EXPECT_EQ(decoded.float2, 2.5f);
+    EXPECT_EQ(decoded.tile_x, 5);
+    EXPECT_EQ(decoded.tile_y, 6);
+    EXPECT_EQ(decoded.data_size, 128);
+}

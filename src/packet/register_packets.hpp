@@ -3,6 +3,7 @@
 #include "register_packet_events.hpp"
 #include "game/server.hpp"
 #include "game/world.hpp"
+#include "game/map_data.hpp"
 #include "game/ftue.hpp"
 #include "message/chat.hpp"
 #include "message/exit.hpp"
@@ -31,6 +32,8 @@ inline bool register_all_packets()
     registry.register_packet<message::Log>();
 
     registry.register_packet<game::Disconnect>();
+
+    registry.register_packet<game::SendMapData>();
 
     registry.register_packet<game::OnSendToServer>();
 

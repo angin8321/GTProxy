@@ -28,7 +28,7 @@ public:
 
 protected:
     void on_connect(ENetPeer* peer) override;
-    void on_receive(ENetPeer* peer, std::span<const std::byte> data) override;
+    void on_receive(ENetPeer* peer, std::span<const std::byte> data, std::uint8_t channel) override;
     void on_disconnect(ENetPeer* peer) override;
 
 private:

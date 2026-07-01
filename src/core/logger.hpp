@@ -39,6 +39,33 @@ public:
         );
     }
 
+    [[nodiscard]] static std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> create_dungeon_request_file_sink()
+    {
+        return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+            "dungeon_request.log",
+            1024 * 1024 * 5,
+            3
+        );
+    }
+
+    [[nodiscard]] static std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> create_dungeon_response_file_sink()
+    {
+        return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+            "dungeon_response.log",
+            1024 * 1024 * 5,
+            3
+        );
+    }
+
+    [[nodiscard]] static std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> create_map_data_file_sink()
+    {
+        return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+            "map_data.log",
+            1024 * 1024 * 5,
+            3
+        );
+    }
+
     static void setup_packet_logger()
     {
         auto packet_sink{ create_packet_file_sink() };
@@ -49,6 +76,39 @@ public:
         packet_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
 
         spdlog::register_logger(packet_logger);
+    }
+
+    static void setup_dungeon_loggers()
+    {
+        auto request_sink{ create_dungeon_request_file_sink() };
+        request_sink->set_level(spdlog::level::trace);
+
+        const auto request_logger{ std::make_shared<spdlog::logger>("dungeon_request", request_sink) };
+        request_logger->set_level(spdlog::level::trace);
+        request_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
+
+        spdlog::register_logger(request_logger);
+
+        auto response_sink{ create_dungeon_response_file_sink() };
+        response_sink->set_level(spdlog::level::trace);
+
+        const auto response_logger{ std::make_shared<spdlog::logger>("dungeon_response", response_sink) };
+        response_logger->set_level(spdlog::level::trace);
+        response_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
+
+        spdlog::register_logger(response_logger);
+    }
+
+    static void setup_map_data_logger()
+    {
+        auto map_data_sink{ create_map_data_file_sink() };
+        map_data_sink->set_level(spdlog::level::trace);
+
+        const auto map_data_logger{ std::make_shared<spdlog::logger>("map_data", map_data_sink) };
+        map_data_logger->set_level(spdlog::level::trace);
+        map_data_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
+
+        spdlog::register_logger(map_data_logger);
     }
 
     [[nodiscard]] std::shared_ptr<spdlog::logger> get_logger() const { return logger_; }

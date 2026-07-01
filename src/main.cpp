@@ -34,6 +34,8 @@ try {
         spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
 
         core::Logger::setup_packet_logger();
+        core::Logger::setup_dungeon_loggers();
+        core::Logger::setup_map_data_logger();
     }
     catch (const spdlog::spdlog_ex& ex) {
         spdlog::error("Log initialization failed: {}", ex.what());

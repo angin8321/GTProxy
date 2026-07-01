@@ -4,6 +4,7 @@
 #include "../packet/packet_helper.hpp"
 #include "../packet/game/server.hpp"
 #include "../packet/game/world.hpp"
+#include "../packet/game/map_data.hpp"
 #include "../world/world.hpp"
 
 namespace core {
@@ -38,7 +39,7 @@ void SessionHandler::setup_raw_packet_handlers() const
             return;
         }
 
-        std::ignore = server_.write(raw_packet->data);
+        std::ignore = server_.write(raw_packet->data, raw_packet->channel);
     });
 
     dispatcher_.appendListener(event::Type::ServerBoundPacket, [this](const event::Event& event) {
@@ -47,7 +48,7 @@ void SessionHandler::setup_raw_packet_handlers() const
             return;
         }
 
-        std::ignore = client_.write(raw_packet->data);
+        std::ignore = client_.write(raw_packet->data, raw_packet->channel);
     });
 }
 
@@ -149,9 +150,16 @@ void SessionHandler::setup_connection_handlers()
            return;
         }
 
+        // Store for retry
+        last_server_address_ = pending_address_;
+        last_server_port_ = pending_port_;
+        retry_count_ = 0;
+
         spdlog::debug("Connecting to Growtopia server at {}:{}", pending_address_, pending_port_);
 
-        client_.connect(pending_address_, pending_port_);
+        if (!client_.connect(pending_address_, pending_port_)) {
+            spdlog::warn("Failed to initiate connection to {}:{}", pending_address_, pending_port_);
+        }
 
         pending_address_.clear();
         pending_port_ = 65535;
@@ -170,6 +178,26 @@ void SessionHandler::setup_connection_handlers()
     });
 
     dispatcher_.appendListener(event::Type::ServerDisconnect, [this](const event::Event& e) {
+        // If we haven't exhausted retries and the client (GT game) is still connected to proxy
+        if (retry_count_ < MAX_RETRIES && server_.is_connected() &&
+            !last_server_address_.empty() && last_server_port_ != 0) {
+            ++retry_count_;
+            spdlog::info("Connection to GT server lost. Retry {}/{} to {}:{}...",
+                retry_count_, MAX_RETRIES, last_server_address_, last_server_port_);
+
+            if (!client_.connect(last_server_address_, last_server_port_)) {
+                spdlog::error("Retry failed to initiate connection");
+                server_.disconnect();
+                spdlog::info("Gracefully disconnect Growtopia client from proxy server");
+            }
+            return;
+        }
+
+        // No more retries or client already gone
+        last_server_address_.clear();
+        last_server_port_ = 0;
+        retry_count_ = 0;
+
         if (!server_.is_connected()) {
             return;
         }
@@ -177,6 +205,21 @@ void SessionHandler::setup_connection_handlers()
         server_.disconnect();
         spdlog::info("Gracefully disconnect Growtopia client from proxy server");
     });
+
+    // Reset retry count on successful connection to GT server
+    dispatcher_.appendListener(event::Type::ServerConnect, [this](const event::Event& e) {
+        retry_count_ = 0;
+        spdlog::debug("Connection to GT server established, retry counter reset");
+    });
+}
+
+bool SessionHandler::try_connect_to_server()
+{
+    if (last_server_address_.empty() || last_server_port_ == 0) {
+        return false;
+    }
+
+    return client_.connect(last_server_address_, last_server_port_);
 }
 
 void SessionHandler::setup_on_spawn_handler() const

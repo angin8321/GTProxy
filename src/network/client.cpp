@@ -49,7 +49,19 @@ bool Client::connect(const std::string& host, std::uint16_t port)
     address.port = port;
 
     peer_ = enet_host_connect(host_, &address, 2, 0);
-    return peer_ != nullptr;
+    if (!peer_) {
+        return false;
+    }
+
+    // Set aggressive timeout: 
+    // limit=0 (use defaults), timeout_minimum=5000ms, timeout_maximum=10000ms
+    // This prevents hanging for 30+ seconds on failed connections
+    enet_peer_timeout(peer_, 0, 5000, 10000);
+
+    // Set ping interval for keepalive (every 2 seconds)
+    peer_->pingInterval = 2000;
+
+    return true;
 }
 
 void Client::on_connect(ENetPeer* peer)
@@ -66,7 +78,7 @@ void Client::on_connect(ENetPeer* peer)
     dispatcher_.dispatch(evt);
 }
 
-void Client::on_receive(ENetPeer* peer, std::span<const std::byte> data)
+void Client::on_receive(ENetPeer* peer, std::span<const std::byte> data, std::uint8_t channel)
 {
     if (peer != peer_) {
         return;
@@ -80,13 +92,14 @@ void Client::on_receive(ENetPeer* peer, std::span<const std::byte> data)
 
     auto pkt_log = spdlog::get("packet");
     pkt_log->info(
-        "Received {} bytes from Growtopia server",
-        data.size()
+        "Received {} bytes from Growtopia server on channel {}",
+        data.size(),
+        static_cast<int>(channel)
     );
 
     const auto decoded{ decoder_.decode(data) };
     if (!decoded.has_value()) {
-        const event::RawPacketEvent evt{ event::Type::ClientBoundPacket, data };
+        const event::RawPacketEvent evt{ event::Type::ClientBoundPacket, data, channel };
         dispatcher_.dispatch(evt);
         return;
     }

@@ -52,8 +52,7 @@ struct VariantPayload {
     {
         // Default to -1 if not specified
         game_packet.net_id = -1;
-        game_packet.decompressed_data_size = -1; // Why Growtopia server default it to -1? what is the other name
-        // for this field?
+        game_packet.int_data = -1;
     }
 
     VariantPayload(const GameUpdatePacket& pkt, PacketVariant  var)

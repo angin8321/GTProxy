@@ -12,6 +12,8 @@ enum NetMessageType : uint32_t {
     NET_MESSAGE_TRACK,
     NET_MESSAGE_CLIENT_LOG_REQUEST,
     NET_MESSAGE_CLIENT_LOG_RESPONSE,
+    NET_MESSAGE_DUNGEON_REQUEST,
+    NET_MESSAGE_DUNGEON_RESPONSE,
     NET_MESSAGE_MAX
 };
 
@@ -92,9 +94,11 @@ enum PacketFlag : uint32_t {
 #pragma pack(push, 1)
 struct GameUpdatePacket {
     PacketType type;
-    uint8_t pad[3];
-    uint32_t net_id;
-    uint8_t pad_2[4];
+    uint8_t pad1;
+    uint8_t pad2;
+    uint8_t pad3;
+    int32_t net_id;
+    int32_t secondary_id;
 
     union {
         PacketFlag value;
@@ -125,10 +129,17 @@ struct GameUpdatePacket {
         };
     } flags;
 
-    uint8_t pad_3[4];
-    uint32_t decompressed_data_size;
-    uint8_t pad_4[28];
+    float float1;
+    int32_t int_data;
+    float pos_x;
+    float pos_y;
+    float speed_x;
+    float speed_y;
+    float float2;
+    int32_t tile_x;
+    int32_t tile_y;
     uint32_t data_size;
 };
 #pragma pack(pop)
+static_assert(sizeof(GameUpdatePacket) == 56, "GameUpdatePacket size must be exactly 56 bytes");
 }

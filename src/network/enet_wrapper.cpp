@@ -35,7 +35,8 @@ void ENetWrapper::process()
                 std::span{
                     reinterpret_cast<std::byte*>(event.packet->data),
                     event.packet->dataLength
-                }
+                },
+                event.channelID
             );
             enet_packet_destroy(event.packet);
             break;

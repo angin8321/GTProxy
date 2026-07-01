@@ -1,4 +1,7 @@
 #pragma once
+#include <cstdint>
+#include <string>
+
 #include "config.hpp"
 #include "../event/event.hpp"
 #include "../network/client.hpp"
@@ -27,6 +30,8 @@ private:
     void setup_on_spawn_handler() const;
     void setup_on_remove_handler() const;
 
+    bool try_connect_to_server();
+
 private:
     Config& config_;
     event::Dispatcher& dispatcher_;
@@ -35,5 +40,11 @@ private:
 
     std::string pending_address_;
     uint16_t pending_port_;
+
+    // Retry state
+    std::string last_server_address_;
+    uint16_t last_server_port_{ 0 };
+    uint8_t retry_count_{ 0 };
+    static constexpr uint8_t MAX_RETRIES{ 3 };
 };
 }

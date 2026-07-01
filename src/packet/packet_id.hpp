@@ -29,6 +29,7 @@ enum class PacketId : uint32_t {
     OnSpawn,
     OnRemove,
     OnFtueButtonDataSet,
+    SendMapData,
     Unknown = std::numeric_limits<uint32_t>::max(),
 };
 
@@ -70,6 +71,7 @@ inline const std::unordered_map<std::string_view, PacketId> VARIANT_FUNCTION_MAP
 
 inline const std::unordered_map<PacketType, PacketId> GAME_PACKET_MAP = {
     { PACKET_DISCONNECT, PacketId::Disconnect },
+    { PACKET_SEND_MAP_DATA, PacketId::SendMapData },
 };
 
 [[nodiscard]] inline PacketId derive_packet_id(const TextPayload& payload)

@@ -61,7 +61,7 @@ void Server::on_connect(ENetPeer* peer)
     dispatcher_.dispatch(evt);
 }
 
-void Server::on_receive(ENetPeer* peer, std::span<const std::byte> data)
+void Server::on_receive(ENetPeer* peer, std::span<const std::byte> data, std::uint8_t channel)
 {
     if (peer != peer_) {
         return;
@@ -75,13 +75,14 @@ void Server::on_receive(ENetPeer* peer, std::span<const std::byte> data)
 
     auto pkt_log = spdlog::get("packet");
     pkt_log->info(
-        "Received {} bytes from Growtopia client",
-        data.size()
+        "Received {} bytes from Growtopia client on channel {}",
+        data.size(),
+        static_cast<int>(channel)
     );
 
     const auto decoded{ decoder_.decode(data) };
     if (!decoded.has_value()) {
-        const event::RawPacketEvent evt{ event::Type::ServerBoundPacket, data };
+        const event::RawPacketEvent evt{ event::Type::ServerBoundPacket, data, channel };
         dispatcher_.dispatch(evt);
         return;
     }

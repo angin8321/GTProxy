@@ -80,10 +80,12 @@ struct ConnectionEvent : Event {
 
 struct RawPacketEvent : Event {
     std::span<const std::byte> data;
+    std::uint8_t channel;
 
-    RawPacketEvent(const Type t, std::span<const std::byte> d)
+    RawPacketEvent(const Type t, std::span<const std::byte> d, std::uint8_t c = 0)
         : Event{ t }
         , data{ d }
+        , channel{ c }
     { }
 };
 

@@ -2,6 +2,7 @@
 #include "packet_event_registry.hpp"
 #include "game/server.hpp"
 #include "game/world.hpp"
+#include "game/map_data.hpp"
 #include "message/chat.hpp"
 #include "message/exit.hpp"
 #include "message/input.hpp"
@@ -44,6 +45,11 @@ inline void register_packet_events() {
     registry.register_event(
         PacketId::Disconnect,
         make_event_builder<game::Disconnect, PacketId::Disconnect>()
+    );
+
+    registry.register_event(
+        PacketId::SendMapData,
+        make_event_builder<game::SendMapData, PacketId::SendMapData>()
     );
 
     registry.register_event(
