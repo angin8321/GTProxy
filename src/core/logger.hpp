@@ -66,6 +66,15 @@ public:
         );
     }
 
+    [[nodiscard]] static std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> create_tile_packets_file_sink()
+    {
+        return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+            "tile_packets.log",
+            1024 * 1024 * 5,
+            3
+        );
+    }
+
     static void setup_packet_logger()
     {
         auto packet_sink{ create_packet_file_sink() };
@@ -109,6 +118,18 @@ public:
         map_data_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
 
         spdlog::register_logger(map_data_logger);
+    }
+
+    static void setup_tile_packets_logger()
+    {
+        auto tile_packets_sink{ create_tile_packets_file_sink() };
+        tile_packets_sink->set_level(spdlog::level::trace);
+
+        const auto tile_packets_logger{ std::make_shared<spdlog::logger>("tile_packets", tile_packets_sink) };
+        tile_packets_logger->set_level(spdlog::level::trace);
+        tile_packets_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
+
+        spdlog::register_logger(tile_packets_logger);
     }
 
     [[nodiscard]] std::shared_ptr<spdlog::logger> get_logger() const { return logger_; }

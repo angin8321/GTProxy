@@ -36,6 +36,7 @@ try {
         core::Logger::setup_packet_logger();
         core::Logger::setup_dungeon_loggers();
         core::Logger::setup_map_data_logger();
+        core::Logger::setup_tile_packets_logger();
     }
     catch (const spdlog::spdlog_ex& ex) {
         spdlog::error("Log initialization failed: {}", ex.what());

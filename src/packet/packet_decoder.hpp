@@ -107,8 +107,13 @@ public:
                     game_pkt_log = map_data_log;
                 }
             }
+            else if (is_tile_packet(game_pkt.type)) {
+                if (auto tile_packets_log{ spdlog::get("tile_packets") }) {
+                    game_pkt_log = tile_packets_log;
+                }
+            }
 
-            if (game_pkt.type != PACKET_SEND_MAP_DATA) {
+            if (game_pkt.type != PACKET_SEND_MAP_DATA && !is_tile_packet(game_pkt.type)) {
                 game_pkt_log->debug(
                     "Decoding packet data ({} bytes):{}",
                     data.size(),
@@ -149,6 +154,20 @@ public:
                 );
                 pkt_log->debug("PACKET_SEND_MAP_DATA logged to map_data ({} bytes)", data.size());
             }
+            else if (is_tile_packet(game_pkt.type)) {
+                game_pkt_log->info(
+                    "Tile packet {} ({} bytes, extra {} bytes):{}",
+                    magic_enum::enum_name(game_pkt.type),
+                    data.size(),
+                    extra.size(),
+                    spdlog::to_hex(data.begin(), data.end())
+                );
+                pkt_log->debug(
+                    "{} logged to tile_packets ({} bytes)",
+                    magic_enum::enum_name(game_pkt.type),
+                    data.size()
+                );
+            }
 
             if (game_pkt.type == PACKET_CALL_FUNCTION) {
                 PacketVariant variant{};
@@ -187,6 +206,24 @@ public:
         default:
             pkt_log->warn("Unknown message type: {}", static_cast<uint32_t>(msg_type));
             return std::nullopt;
+        }
+    }
+
+private:
+    [[nodiscard]] static bool is_tile_packet(PacketType type)
+    {
+        switch (type) {
+        case PACKET_TILE_CHANGE_REQUEST:
+        case PACKET_SEND_TILE_UPDATE_DATA:
+        case PACKET_SEND_TILE_UPDATE_DATA_MULTIPLE:
+        case PACKET_TILE_ACTIVATE_REQUEST:
+        case PACKET_TILE_APPLY_DAMAGE:
+        case PACKET_SEND_TILE_TREE_STATE:
+        case PACKET_SELECT_TILE_INDEX:
+        case PACKET_ON_STEP_ON_TILE_MOD:
+            return true;
+        default:
+            return false;
         }
     }
 };
